@@ -3,6 +3,7 @@ package by.step.service.impl;
 import by.step.dto.ProfileDto;
 import by.step.entity.Profile;
 import by.step.entity.User;
+import by.step.mapper.ProfileMapper;
 import by.step.repository.ProfileRepository;
 import by.step.repository.UserRepository;
 import by.step.service.ProfileService;
@@ -19,6 +20,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
+    private final ProfileMapper profileMapper = ProfileMapper.INSTANCE;
 
     @Override
     @Transactional
@@ -38,13 +40,13 @@ public class ProfileServiceImpl implements ProfileService {
                 .build();
 
         Profile savedProfile = profileRepository.save(profile);
-        return mapToDto(savedProfile);
+        return profileMapper.toDto(savedProfile);
     }
 
     @Override
     public Optional<ProfileDto> findByUserId(Long userId) {
         return profileRepository.findByUserId(userId)
-                .map(this::mapToDto);
+                .map(profileMapper::toDto);
     }
 
     @Override
@@ -55,7 +57,7 @@ public class ProfileServiceImpl implements ProfileService {
 
         profile.setBio(bio);
         Profile updatedProfile = profileRepository.save(profile);
-        return mapToDto(updatedProfile);
+        return profileMapper.toDto(updatedProfile);
     }
 
     @Override
@@ -92,14 +94,4 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElse(false);
     }
 
-    private ProfileDto mapToDto(Profile profile) {
-        return ProfileDto.builder()
-                .id(profile.getId())
-                .userId(profile.getUser().getId())
-                .username(profile.getUser().getUsername())
-                .bio(profile.getBio())
-                .isArtist(profile.getIsArtist())
-                .isStudio(profile.getIsStudio())
-                .build();
-    }
 }

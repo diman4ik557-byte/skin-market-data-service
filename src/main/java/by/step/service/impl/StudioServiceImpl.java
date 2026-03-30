@@ -7,6 +7,8 @@ import by.step.entity.ArtistProfile;
 import by.step.entity.Profile;
 import by.step.entity.Studio;
 import by.step.entity.User;
+import by.step.mapper.ArtistProfileMapper;
+import by.step.mapper.StudioMapper;
 import by.step.repository.*;
 import by.step.service.StudioService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,8 @@ public class StudioServiceImpl implements StudioService {
     private final UserRepository userRepository;
     private final ArtistProfileRepository artistProfileRepository;
     private final StudioMemberRepository studioMemberRepository;
+    private final StudioMapper studioMapper = StudioMapper.INSTANCE;
+    private final ArtistProfileMapper artistProfileMapper = ArtistProfileMapper.INSTANCE;
 
     @Override
     @Transactional
@@ -53,32 +57,32 @@ public class StudioServiceImpl implements StudioService {
         profileRepository.save(profile);
 
         Studio saved = studioRepository.save(studio);
-        return mapToDto(saved);
+        return studioMapper.toDto(saved);
     }
 
     @Override
     public Optional<StudioDto> findById(Long studioId) {
         return studioRepository.findById(studioId)
-                .map(this::mapToDto);
+                .map(studioMapper::toDto);
     }
 
     @Override
     public Optional<StudioDto> findByUserId(Long userId) {
         return studioRepository.findByProfileUserId(userId)
-                .map(this::mapToDto);
+                .map(studioMapper::toDto);
     }
 
     @Override
     public List<StudioDto> findAllStudios() {
         return studioRepository.findAll().stream()
-                .map(this::mapToDto)
+                .map(studioMapper::toDto)
                 .toList();
     }
 
     @Override
     public List<StudioDto> findStudiosByName(String name) {
         return studioRepository.findByNameContainingIgnoreCase(name).stream()
-                .map(this::mapToDto)
+                .map(studioMapper::toDto)
                 .toList();
     }
 
@@ -90,7 +94,7 @@ public class StudioServiceImpl implements StudioService {
 
         studio.setDescription(description);
         Studio updated = studioRepository.save(studio);
-        return mapToDto(updated);
+        return studioMapper.toDto(updated);
     }
 
     @Override
@@ -141,7 +145,7 @@ public class StudioServiceImpl implements StudioService {
                 .orElseThrow(() -> new IllegalArgumentException("Студия не найдена - " + studioId));
 
         return artistProfileRepository.findByStudio(studio).stream()
-                .map(this::mapArtistToDto)
+                .map(artistProfileMapper::toDto)
                 .toList();
     }
 
@@ -167,32 +171,6 @@ public class StudioServiceImpl implements StudioService {
 
         studioRepository.delete(studio);
 
-    }
-
-    private StudioDto mapToDto(Studio studio) {
-        return StudioDto.builder()
-                .id(studio.getId())
-                .profileId(studio.getProfile().getId())
-                .name(studio.getName())
-                .description(studio.getDescription())
-                .foundedAt(studio.getFoundedAt())
-                .managerId(studio.getManager() != null ? studio.getManager().getId() : null)
-                .managerName(studio.getManager() != null ? studio.getManager().getUsername() : null)
-                .membersCount((Integer) artistProfileRepository.findByStudio(studio).size())
-                .build();
-    }
-
-    private ArtistProfileDto mapArtistToDto(ArtistProfile artist) {
-        return ArtistProfileDto.builder()
-                .id(artist.getId())
-                .profileId(artist.getProfile().getId())
-                .username(artist.getProfile().getUser().getUsername())
-                .studioName(artist.getStudio() != null ? artist.getStudio().getName() : null)
-                .styles(artist.getStyles())
-                .minPrice(artist.getMinPrice())
-                .averageTime(artist.getAverageTime())
-                .isAvailable(artist.getIsAvailable())
-                .build();
     }
 
 }

@@ -4,6 +4,7 @@ import by.step.dto.ArtistProfileDto;
 import by.step.entity.ArtistProfile;
 import by.step.entity.Profile;
 import by.step.entity.Studio;
+import by.step.mapper.ArtistProfileMapper;
 import by.step.repository.ArtistProfileRepository;
 import by.step.repository.ProfileRepository;
 import by.step.repository.StudioRepository;
@@ -24,6 +25,7 @@ public class ArtistProfileServiceImpl implements ArtistProfileService {
     private final ArtistProfileRepository artistProfileRepository;
     private final ProfileRepository profileRepository;
     private final StudioRepository studioRepository;
+    private final ArtistProfileMapper artistProfileMapper = ArtistProfileMapper.INSTANCE;
 
     @Override
     @Transactional
@@ -47,47 +49,47 @@ public class ArtistProfileServiceImpl implements ArtistProfileService {
         profileRepository.save(profile);
 
         ArtistProfile saved = artistProfileRepository.save(artistProfile);
-        return mapToDto(saved);
+        return artistProfileMapper.toDto(saved);
     }
 
     @Override
     public Optional<ArtistProfileDto> findByUserId(Long userId) {
         return artistProfileRepository.findByProfileUserId(userId)
-                .map(this::mapToDto);
+                .map(artistProfileMapper::toDto);
     }
 
     @Override
     public List<ArtistProfileDto> findAllArtists() {
         return artistProfileRepository.findAll().stream()
-                .map(this::mapToDto)
+                .map(artistProfileMapper::toDto)
                 .toList();
     }
 
     @Override
     public List<ArtistProfileDto> findAvailableArtists() {
         return artistProfileRepository.findByIsAvailableTrue().stream()
-                .map(this::mapToDto)
+                .map(artistProfileMapper::toDto)
                 .toList();
     }
 
     @Override
     public List<ArtistProfileDto> findArtistsByStyle(String style) {
         return artistProfileRepository.findByStylesContaining(style).stream()
-                .map(this::mapToDto)
+                .map(artistProfileMapper::toDto)
                 .toList();
     }
 
     @Override
     public List<ArtistProfileDto> findArtistsByMaxPrice(BigDecimal maxPrice) {
         return artistProfileRepository.findByMinPriceLessThanEqual(maxPrice).stream()
-                .map(this::mapToDto)
+                .map(artistProfileMapper::toDto)
                 .toList();
     }
 
     @Override
     public List<ArtistProfileDto> findArtistsByFilters(String style, BigDecimal maxPrice, Boolean isAvailable) {
         return artistProfileRepository.findByFilters(style, maxPrice, isAvailable).stream()
-                .map(this::mapToDto)
+                .map(artistProfileMapper::toDto)
                 .toList();
     }
 
@@ -99,7 +101,7 @@ public class ArtistProfileServiceImpl implements ArtistProfileService {
 
         artist.setStyles(styles);
         ArtistProfile updated = artistProfileRepository.save(artist);
-        return mapToDto(updated);
+        return artistProfileMapper.toDto(updated);
     }
 
     @Override
@@ -110,7 +112,7 @@ public class ArtistProfileServiceImpl implements ArtistProfileService {
 
         artist.setMinPrice(minPrice);
         ArtistProfile updated = artistProfileRepository.save(artist);
-        return mapToDto(updated);
+        return artistProfileMapper.toDto(updated);
 
     }
 
@@ -122,7 +124,7 @@ public class ArtistProfileServiceImpl implements ArtistProfileService {
 
         artist.setAverageTime(averageTime);
         ArtistProfile updated = artistProfileRepository.save(artist);
-        return mapToDto(updated);
+        return artistProfileMapper.toDto(updated);
     }
 
     @Override
@@ -151,16 +153,4 @@ public class ArtistProfileServiceImpl implements ArtistProfileService {
         artistProfileRepository.removeFromStudio(artistId);
     }
 
-    private ArtistProfileDto mapToDto(ArtistProfile artist) {
-        return ArtistProfileDto.builder()
-                .id(artist.getId())
-                .profileId(artist.getProfile().getId())
-                .username(artist.getProfile().getUser().getUsername())
-                .studioName(artist.getStudio() != null ? artist.getStudio().getName() : null)
-                .styles(artist.getStyles())
-                .minPrice(artist.getMinPrice())
-                .averageTime(artist.getAverageTime())
-                .isAvailable(artist.getIsAvailable())
-                .build();
-    }
 }

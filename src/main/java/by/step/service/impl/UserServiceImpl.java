@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import by.step.mapper.UserMapper;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper = UserMapper.INSTANCE;
 
     @Override
     @Transactional
@@ -42,32 +44,32 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        return mapToDto(savedUser);
+        return userMapper.toDto(savedUser);
     }
 
     @Override
     public Optional<UserDto> findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .map(this::mapToDto);
+                .map(userMapper::toDto);
     }
 
     @Override
     public Optional<UserDto> findByEmail(String email) {
         return userRepository.findByEmail(email)
-                .map(this::mapToDto);
+                .map(userMapper::toDto);
     }
 
     @Override
     public List<UserDto> findAllUsers() {
         return userRepository.findAll().stream()
-                .map(this::mapToDto)
+                .map(userMapper::toDto)
                 .toList();
     }
 
     @Override
     public List<UserDto> findUserByRole(UserRole role) {
         return userRepository.findByRole(role).stream()
-                .map(this::mapToDto)
+                .map(userMapper::toDto)
                 .toList();
     }
 
@@ -96,7 +98,7 @@ public class UserServiceImpl implements UserService {
         if (amount.compareTo(BigDecimal.ZERO) <= 0){
             throw new IllegalArgumentException("Пополнение должно быть больше нуля");
         }
-        userRepository.updateBalance(userId, amount);
+        userRepository.addToBalance(userId, amount);
     }
 
     @Override
@@ -123,14 +125,4 @@ public class UserServiceImpl implements UserService {
                 .orElse(false);
     }
 
-    private UserDto mapToDto(User user){
-        return UserDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .balance(user.getBalance())
-                .registeredAt(user.getRegisteredAt())
-                .build();
-    }
 }

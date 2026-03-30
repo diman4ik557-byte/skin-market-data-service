@@ -5,6 +5,7 @@ import by.step.entity.ArtistProfile;
 import by.step.entity.Studio;
 import by.step.entity.StudioMember;
 import by.step.entity.enums.StudioRole;
+import by.step.mapper.StudioMemberMapper;
 import by.step.repository.ArtistProfileRepository;
 import by.step.repository.StudioMemberRepository;
 import by.step.repository.StudioRepository;
@@ -25,6 +26,7 @@ public class StudioMemberServiceImpl implements StudioMemberService {
     private final StudioMemberRepository studioMemberRepository;
     private final StudioRepository studioRepository;
     private final ArtistProfileRepository artistProfileRepository;
+    private final StudioMemberMapper studioMemberMapper = StudioMemberMapper.INSTANCE;
 
     @Override
     public StudioMemberDto addMember(Long studioId, Long artistId, StudioRole role) {
@@ -46,7 +48,7 @@ public class StudioMemberServiceImpl implements StudioMemberService {
                 .build();
 
         StudioMember saved = studioMemberRepository.save(member);
-        return mapToDto(saved);
+        return studioMemberMapper.toDto(saved);
     }
 
     @Override
@@ -59,7 +61,7 @@ public class StudioMemberServiceImpl implements StudioMemberService {
         }
 
         return studioMemberRepository.findByStudioAndMember(studio, artist)
-                .map(this::mapToDto);
+                .map(studioMemberMapper::toDto);
     }
 
     @Override
@@ -68,7 +70,7 @@ public class StudioMemberServiceImpl implements StudioMemberService {
                 .orElseThrow(() -> new IllegalArgumentException("Студия не найдена - " + studioId));
 
         return studioMemberRepository.findByStudio(studio).stream()
-                .map(this::mapToDto)
+                .map(studioMemberMapper::toDto)
                 .toList();
     }
 
@@ -78,7 +80,7 @@ public class StudioMemberServiceImpl implements StudioMemberService {
                 .orElseThrow(() -> new IllegalArgumentException("Художник не найден - " + artistId));
 
         return studioMemberRepository.findByMember(artist).stream()
-                .map(this::mapToDto)
+                .map(studioMemberMapper::toDto)
                 .toList();
     }
 
@@ -88,7 +90,7 @@ public class StudioMemberServiceImpl implements StudioMemberService {
                 .orElseThrow(() -> new IllegalArgumentException("Студия не найдена - " + studioId));
 
         return studioMemberRepository.findByStudioAndRole(studio, role).stream()
-                .map(this::mapToDto)
+                .map(studioMemberMapper::toDto)
                 .toList();
     }
 
@@ -142,15 +144,4 @@ public class StudioMemberServiceImpl implements StudioMemberService {
                 .orElse(false);
     }
 
-    private StudioMemberDto mapToDto(StudioMember member) {
-        return StudioMemberDto.builder()
-                .id(member.getId())
-                .studioId(member.getStudio().getId())
-                .studioName(member.getStudio().getName())
-                .artistId(member.getMember().getId())
-                .artistName(member.getMember().getProfile().getUser().getUsername())
-                .role(member.getRole())
-                .joinedAt(member.getJoinedAt())
-                .build();
-    }
 }
