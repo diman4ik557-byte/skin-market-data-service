@@ -4,6 +4,7 @@ import by.step.dto.MessageDto;
 import by.step.entity.Message;
 import by.step.entity.Order;
 import by.step.entity.User;
+import by.step.mapper.MessageMapper;
 import by.step.repository.MessageRepository;
 import by.step.repository.OrderRepository;
 import by.step.repository.UserRepository;
@@ -25,6 +26,7 @@ public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final MessageMapper messageMapper = MessageMapper.INSTANCE;
 
     @Override
     @Transactional
@@ -50,7 +52,7 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Заказ не найден - " + orderId));
 
         return messageRepository.findByOrder(order, pageable)
-                .map(this::mapToDto);
+                .map(messageMapper::toDto);
     }
 
     @Override
@@ -59,14 +61,14 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Заказ не найден - " + orderId));
 
         return messageRepository.findByOrderAndIsPreviewTrue(order).stream()
-                .map(this::mapToDto)
+                .map(messageMapper::toDto)
                 .toList();
     }
 
     @Override
     public List<MessageDto> getMessagesWithAttachments(Long orderId) {
         return messageRepository.findMessagesWithAttachments(orderId).stream()
-                .map(this::mapToDto)
+                .map(messageMapper::toDto)
                 .toList();
     }
 
@@ -85,6 +87,7 @@ public class MessageServiceImpl implements MessageService {
     public long getPreviewMessagesCount(Long orderId) {
         return messageRepository.countPreviewMessages(orderId);
     }
+
 
     @Transactional
     private MessageDto sendMessageInternal(Long orderId, Long senderId, String content,
@@ -110,19 +113,7 @@ public class MessageServiceImpl implements MessageService {
                 .build();
 
         Message saved = messageRepository.save(message);
-        return mapToDto(saved);
+        return messageMapper.toDto(saved);
     }
 
-    private MessageDto mapToDto(Message message) {
-        return MessageDto.builder()
-                .id(message.getId())
-                .orderId(message.getOrder().getId())
-                .senderId(message.getSender().getId())
-                .senderName(message.getSender().getUsername())
-                .content(message.getContent())
-                .attachmentUrl(message.getAttachmentUrl())
-                .isPreview(message.getIsPreview())
-                .sentAt(message.getSentAt())
-                .build();
-    }
 }

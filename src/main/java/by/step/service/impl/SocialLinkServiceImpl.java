@@ -4,6 +4,7 @@ import by.step.dto.SocialLinkDto;
 import by.step.entity.Profile;
 import by.step.entity.SocialLink;
 import by.step.entity.enums.SocialPlatform;
+import by.step.mapper.SocialLinkMapper;
 import by.step.repository.ProfileRepository;
 import by.step.repository.SocialLinkRepository;
 import by.step.service.SocialLinkService;
@@ -21,6 +22,7 @@ public class SocialLinkServiceImpl implements SocialLinkService {
 
     private final SocialLinkRepository socialLinkRepository;
     private final ProfileRepository profileRepository;
+    private final SocialLinkMapper socialLinkMapper = SocialLinkMapper.INSTANCE;
 
     @Override
     @Transactional
@@ -42,7 +44,7 @@ public class SocialLinkServiceImpl implements SocialLinkService {
                 .build();
 
         SocialLink saved = socialLinkRepository.save(link);
-        return mapToDto(saved);
+        return socialLinkMapper.toDto(saved);
     }
 
     @Override
@@ -52,7 +54,7 @@ public class SocialLinkServiceImpl implements SocialLinkService {
             return Optional.empty();
         }
         return socialLinkRepository.findByProfileAndPlatform(profile, platform)
-                .map(this::mapToDto);
+                .map(socialLinkMapper::toDto);
     }
 
     @Override
@@ -61,7 +63,7 @@ public class SocialLinkServiceImpl implements SocialLinkService {
                 .orElseThrow(() -> new IllegalArgumentException("Профиль не найден " + profileId));
 
         return socialLinkRepository.findByProfile(profile).stream()
-                .map(this::mapToDto)
+                .map(socialLinkMapper::toDto)
                 .toList();
     }
 
@@ -72,7 +74,7 @@ public class SocialLinkServiceImpl implements SocialLinkService {
 
         return socialLinkRepository.findByProfileAndPrimary(profile)
                 .stream()
-                .map(this::mapToDto)
+                .map(socialLinkMapper::toDto)
                 .toList();
     }
 
@@ -121,15 +123,4 @@ public class SocialLinkServiceImpl implements SocialLinkService {
         return platform.getUrlPrefix() + userIdentifier;
     }
 
-    private SocialLinkDto mapToDto(SocialLink link) {
-        return SocialLinkDto.builder()
-                .id(link.getId())
-                .profileId(link.getProfile().getId())
-                .platform(link.getPlatform())
-                .platformDisplayName(link.getPlatform().getDisplayName())
-                .userIdentifier(link.getUserIdentifier())
-                .fullUrl(getFullUrl(link.getPlatform(), link.getUserIdentifier()))
-                .isPrimary(link.getIsPrimary())
-                .build();
-    }
 }

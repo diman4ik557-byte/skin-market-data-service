@@ -5,6 +5,7 @@ import by.step.entity.Order;
 import by.step.entity.User;
 import by.step.entity.enums.OrderStatus;
 import by.step.entity.enums.UserRole;
+import by.step.mapper.OrderMapper;
 import by.step.repository.OrderRepository;
 import by.step.repository.UserRepository;
 import by.step.service.OrderService;
@@ -25,6 +26,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final OrderMapper orderMapper = OrderMapper.INSTANCE;
 
     @Override
     public OrderDto createOrder(Long customerId, Long artistId, String description, BigDecimal price) {
@@ -55,14 +57,14 @@ public class OrderServiceImpl implements OrderService {
         userRepository.save(customer);
 
         Order saved = orderRepository.save(order);
-        return mapToDto(saved);
+        return orderMapper.toDto(saved);
     }
 
     @Override
     public OrderDto findById(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Заказ не найден - " + orderId));
-        return mapToDto(order);
+        return orderMapper.toDto(order);
     }
 
     @Override
@@ -71,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("Заказчик не найден - " + customerId));
 
         return orderRepository.findByCustomer(customer, pageable)
-                .map(this::mapToDto);
+                .map(orderMapper::toDto);
     }
 
     @Override
@@ -80,13 +82,13 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("Художник не найден - " + artistId));
 
         return orderRepository.findByArtist(artist, pageable)
-                .map(this::mapToDto);
+                .map(orderMapper::toDto);
     }
 
     @Override
     public Page<OrderDto> findByStatus(OrderStatus status, Pageable pageable) {
         return orderRepository.findByStatus(status, pageable)
-                .map(this::mapToDto);
+                .map(orderMapper::toDto);
     }
 
     @Override
@@ -100,7 +102,7 @@ public class OrderServiceImpl implements OrderService {
         );
 
         return orders.stream()
-                .map(this::mapToDto)
+                .map(orderMapper::toDto)
                 .toList();
     }
 
@@ -202,19 +204,4 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.getCompletedOrdersCount(artistId);
     }
 
-    private OrderDto mapToDto(Order order) {
-        return OrderDto.builder()
-                .id(order.getId())
-                .customerId(order.getCustomer().getId())
-                .customerName(order.getCustomer().getUsername())
-                .artistId(order.getArtist().getId())
-                .artistName(order.getArtist().getUsername())
-                .status(order.getStatus())
-                .description(order.getDescription())
-                .price(order.getPrice())
-                .finalFileUrl(order.getFinalFileUrl())
-                .createdAt(order.getCreatedAt())
-                .completedAt(order.getCompletedAt())
-                .build();
-    }
 }
