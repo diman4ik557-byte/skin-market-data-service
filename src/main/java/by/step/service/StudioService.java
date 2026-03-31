@@ -2,6 +2,7 @@ package by.step.service;
 
 import by.step.dto.ArtistProfileDto;
 import by.step.dto.StudioDto;
+import by.step.dto.StudioMemberDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +25,7 @@ public interface StudioService {
 
     void removeMember(Long studioId, Long artistId);
 
-    void updateMemberRole(Long studioId, Long artistId, String role);
+    StudioMemberDto updateMemberRole(Long studioId, Long artistId, String role);
 
     List<ArtistProfileDto> getStudioMembers(Long studioId);
 

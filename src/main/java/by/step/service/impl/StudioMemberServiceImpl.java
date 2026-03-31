@@ -65,6 +65,12 @@ public class StudioMemberServiceImpl implements StudioMemberService {
     }
 
     @Override
+    public Optional<StudioMemberDto> findByStudioIdAndMemberId(Long studioId, Long memberId) {
+        return studioMemberRepository.findByStudioIdAndMemberId(studioId, memberId)
+                .map(studioMemberMapper::toDto);
+    }
+
+    @Override
     public List<StudioMemberDto> findByStudio(Long studioId) {
         Studio studio = studioRepository.findById(studioId)
                 .orElseThrow(() -> new IllegalArgumentException("Студия не найдена - " + studioId));

@@ -12,6 +12,8 @@ public interface StudioMemberService {
 
     Optional<StudioMemberDto> findByStudioAndArtist(Long studioId, Long artistId);
 
+    Optional<StudioMemberDto> findByStudioIdAndMemberId(Long studioId, Long memberId);
+
     List<StudioMemberDto> findByStudio(Long studioId);
 
     List<StudioMemberDto> findByArtist(Long artistId);
