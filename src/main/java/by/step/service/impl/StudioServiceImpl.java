@@ -3,12 +3,12 @@ package by.step.service.impl;
 
 import by.step.dto.ArtistProfileDto;
 import by.step.dto.StudioDto;
-import by.step.entity.ArtistProfile;
-import by.step.entity.Profile;
-import by.step.entity.Studio;
-import by.step.entity.User;
+import by.step.dto.StudioMemberDto;
+import by.step.entity.*;
+import by.step.entity.enums.StudioRole;
 import by.step.mapper.ArtistProfileMapper;
 import by.step.mapper.StudioMapper;
+import by.step.mapper.StudioMemberMapper;
 import by.step.repository.*;
 import by.step.service.StudioService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +30,7 @@ public class StudioServiceImpl implements StudioService {
     private final ArtistProfileRepository artistProfileRepository;
     private final StudioMemberRepository studioMemberRepository;
     private final StudioMapper studioMapper = StudioMapper.INSTANCE;
+    private final StudioMemberMapper studioMemberMapper = StudioMemberMapper.INSTANCE;
     private final ArtistProfileMapper artistProfileMapper = ArtistProfileMapper.INSTANCE;
 
     @Override
@@ -133,10 +134,18 @@ public class StudioServiceImpl implements StudioService {
 
     @Override
     @Transactional
-    public void updateMemberRole(Long studioId, Long artistId, String role) {
+    public StudioMemberDto updateMemberRole(Long studioId, Long artistId, String role) {
+        StudioMember member = studioMemberRepository.findByStudioIdAndMemberId(studioId, artistId)
+                .orElseThrow(() -> new IllegalArgumentException("Участник не найден в этой студии"));
 
-        // TODO: реализовать после добавления StudioMember
+        try {
+            member.setRole(by.step.entity.enums.StudioRole.valueOf(role.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Недопустимая роль: " + role);
+        }
 
+        StudioMember saved = studioMemberRepository.save(member);
+        return studioMemberMapper.toDto(saved);
     }
 
     @Override

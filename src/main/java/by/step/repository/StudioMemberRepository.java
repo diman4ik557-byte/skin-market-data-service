@@ -22,6 +22,8 @@ public interface StudioMemberRepository extends JpaRepository<StudioMember,Long>
 
     Optional<StudioMember> findByStudioAndMember(Studio studio, ArtistProfile member);
 
+    Optional<StudioMember> findByStudioIdAndMemberId(Long studioId, Long memberId);
+
     List<StudioMember> findByStudioAndRole(Studio studio, String role);
 
     boolean existsByStudioAndMember(Studio studio, ArtistProfile member);
