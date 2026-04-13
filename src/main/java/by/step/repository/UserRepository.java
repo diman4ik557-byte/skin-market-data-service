@@ -2,12 +2,14 @@ package by.step.repository;
 
 import by.step.entity.User;
 import by.step.entity.enums.UserRole;
+import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNullApi;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -24,6 +26,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     List<User> findByRole(UserRole role);
+
+    Optional<User> findById(@NonNull Long userId);
 
     boolean existsByUsername(String username);
 
@@ -52,19 +56,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Modifying Queries
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Transactional
     @Query("UPDATE User u SET u.balance = :balance WHERE u.id = :userId")
     void updateBalance(@Param("userId") Long userId,
                        @Param("balance") BigDecimal balance);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Transactional
     @Query("UPDATE User u SET u.balance = u.balance + :amount WHERE u.id = :userId")
     void addToBalance(@Param("userId") Long userId,
                       @Param("amount") BigDecimal amount);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Transactional
     @Query("UPDATE User u SET u.balance = u.balance - :amount WHERE u.id = :userId")
     void subtractFromBalance(@Param("userId") Long userId,

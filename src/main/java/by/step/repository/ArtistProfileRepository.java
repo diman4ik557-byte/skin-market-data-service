@@ -21,6 +21,8 @@ public interface ArtistProfileRepository extends JpaRepository<ArtistProfile, Lo
 
     Optional<ArtistProfile> findByProfileUserId(Long userId);
 
+    Optional<ArtistProfile> findByProfileId(Long profileId);
+
     List<ArtistProfile> findByStudio(Studio studio);
 
     List<ArtistProfile> findByIsAvailableTrue();

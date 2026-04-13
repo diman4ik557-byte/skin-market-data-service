@@ -21,7 +21,7 @@ public interface SocialLinkRepository extends JpaRepository<SocialLink,Long> {
     Optional<SocialLink> findByProfileAndPlatform(Profile profile,
                                                   SocialPlatform platform);
 
-    List<SocialLink> findByProfileAndPrimary(Profile profile);
+    List<SocialLink> findByProfileAndIsPrimaryTrue(Profile profile);
 
     void deleteByProfile(Profile profile);
 

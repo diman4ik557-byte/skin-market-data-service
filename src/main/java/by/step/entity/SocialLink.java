@@ -23,6 +23,8 @@ public class SocialLink {
     @JoinColumn(name = "profile_id", nullable = false)
     private Profile profile;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "platform")
     private SocialPlatform platform;
 
     @Column(name = "user_identifier")

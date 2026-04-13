@@ -1,0 +1,4 @@
+<configuration>
+    <logger name="org.testcontainers" level="DEBUG"/>
+    <logger name="com.github.dockerjava" level="DEBUG"/>
+</configuration>

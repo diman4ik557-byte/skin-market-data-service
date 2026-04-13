@@ -72,7 +72,7 @@ public class SocialLinkServiceImpl implements SocialLinkService {
         Profile profile = profileRepository.findById(profileId)
                 .orElseThrow(() -> new IllegalArgumentException("Profile not found: " + profileId));
 
-        return socialLinkRepository.findByProfileAndPrimary(profile)
+        return socialLinkRepository.findByProfileAndIsPrimaryTrue(profile)
                 .stream()
                 .map(socialLinkMapper::toDto)
                 .toList();
