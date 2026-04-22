@@ -1,7 +1,7 @@
 package by.step.controller;
 
 import by.step.dto.SocialLinkDto;
-import by.step.entity.enums.SocialPlatform;
+import by.step.enums.SocialPlatform;
 import by.step.service.SocialLinkService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

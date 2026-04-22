@@ -4,6 +4,7 @@ import by.step.dto.MessageDto;
 import by.step.service.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -12,7 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(MessageController.class)
-@ActiveProfiles("test")
+@DisplayName("Web тесты контроллера сообщений")
 class MessageControllerWebMvcTest {
 
     @Autowired
@@ -37,7 +38,6 @@ class MessageControllerWebMvcTest {
     private ObjectMapper objectMapper;
 
     private MessageDto testMessageDto;
-    private MessageDto previewMessageDto;
     private Page<MessageDto> testMessagePage;
 
     @BeforeEach
@@ -46,77 +46,19 @@ class MessageControllerWebMvcTest {
                 .id(1L)
                 .orderId(1L)
                 .senderId(1L)
-                .senderName("ivan")
-                .content("Здравствуйте! Хочу заказать гнома пивовара")
+                .senderName("customer")
+                .content("Test message")
                 .isPreview(false)
-                .sentAt(LocalDateTime.of(2024, 1, 10, 10, 5))
+                .sentAt(LocalDateTime.now())
                 .build();
 
-        previewMessageDto = MessageDto.builder()
-                .id(4L)
-                .orderId(2L)
-                .senderId(2L)
-                .senderName("petr")
-                .content("Вот набросок, посмотрите")
-                .attachmentUrl("/uploads/previews/order2_sketch.png")
-                .isPreview(true)
-                .sentAt(LocalDateTime.of(2024, 3, 2, 11, 0))
-                .build();
-
-        testMessagePage = new PageImpl<>(List.of(testMessageDto), PageRequest.of(0, 10), 1);
+        testMessagePage = new PageImpl<>(List.of(testMessageDto),
+                PageRequest.of(0, 10), 1);
     }
 
     @Test
-    void checkSendMessage() throws Exception {
-        when(messageService.sendMessage(anyLong(), anyLong(), anyString()))
-                .thenReturn(testMessageDto);
-
-        mockMvc.perform(post("/api/messages/order/{orderId}/send", 1L)
-                        .param("senderId", "1")
-                        .param("content", "Здравствуйте! Хочу заказать гнома пивовара"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.senderName").value("ivan"))
-                .andExpect(jsonPath("$.content").value("Здравствуйте! Хочу заказать гнома пивовара"));
-    }
-
-    @Test
-    void checkSendPreview() throws Exception {
-        when(messageService.sendPreview(anyLong(), anyLong(), anyString(), anyString()))
-                .thenReturn(previewMessageDto);
-
-        mockMvc.perform(post("/api/messages/order/{orderId}/preview", 2L)
-                        .param("senderId", "2")
-                        .param("content", "Вот набросок, посмотрите")
-                        .param("attachmentUrl", "/uploads/previews/order2_sketch.png"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.isPreview").value(true))
-                .andExpect(jsonPath("$.attachmentUrl").value("/uploads/previews/order2_sketch.png"));
-    }
-
-    @Test
-    void checkSendAttachment() throws Exception {
-        MessageDto attachmentMessage = MessageDto.builder()
-                .id(5L)
-                .orderId(1L)
-                .senderId(1L)
-                .senderName("ivan")
-                .attachmentUrl("/uploads/attachments/reference.png")
-                .isPreview(false)
-                .build();
-
-        when(messageService.sendAttachment(anyLong(), anyLong(), anyString()))
-                .thenReturn(attachmentMessage);
-
-        mockMvc.perform(post("/api/messages/order/{orderId}/attachment", 1L)
-                        .param("senderId", "1")
-                        .param("attachmentUrl", "/uploads/attachments/reference.png"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.attachmentUrl").value("/uploads/attachments/reference.png"));
-    }
-
-    @Test
-    void checkGetMessagesByOrder() throws Exception {
+    @DisplayName("Получение сообщений по заказу")
+    void getMessagesByOrder_Success() throws Exception {
         when(messageService.getMessagesByOrder(eq(1L), any(Pageable.class)))
                 .thenReturn(testMessagePage);
 
@@ -125,32 +67,101 @@ class MessageControllerWebMvcTest {
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].content").value("Здравствуйте! Хочу заказать гнома пивовара"));
+                .andExpect(jsonPath("$.content[0].content").value("Test message"));
     }
 
     @Test
-    void checkGetPreviewMessages() throws Exception {
-        List<MessageDto> previews = List.of(previewMessageDto);
-        when(messageService.getPreviewMessages(2L)).thenReturn(previews);
+    @DisplayName("Отправка сообщения в заказ")
+    void sendMessage_Success() throws Exception {
+        when(messageService.sendMessage(anyLong(), anyLong(), anyString()))
+                .thenReturn(testMessageDto);
 
-        mockMvc.perform(get("/api/messages/order/{orderId}/previews", 2L))
+        mockMvc.perform(post("/api/messages/order/{orderId}/send", 1L)
+                        .param("senderId", "1")
+                        .param("content", "Test message"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].isPreview").value(true));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.content").value("Test message"));
     }
 
     @Test
-    void checkGetMessagesWithAttachments() throws Exception {
-        List<MessageDto> attachments = List.of(testMessageDto);
-        when(messageService.getMessagesWithAttachments(1L)).thenReturn(attachments);
+    @DisplayName("Отправка предпросмотра")
+    void sendPreview_Success() throws Exception {
+        MessageDto previewDto = MessageDto.builder()
+                .id(2L)
+                .orderId(1L)
+                .senderId(2L)
+                .senderName("artist")
+                .content("Preview")
+                .attachmentUrl("/uploads/preview.png")
+                .isPreview(true)
+                .build();
 
-        mockMvc.perform(get("/api/messages/order/{orderId}/attachments", 1L))
+        when(messageService.sendPreview(anyLong(), anyLong(), anyString(), anyString()))
+                .thenReturn(previewDto);
+
+        mockMvc.perform(post("/api/messages/order/{orderId}/preview", 1L)
+                        .param("senderId", "2")
+                        .param("content", "Preview")
+                        .param("attachmentUrl", "/uploads/preview.png"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.isPreview").value(true))
+                .andExpect(jsonPath("$.attachmentUrl")
+                        .value("/uploads/preview.png"));
     }
 
     @Test
-    void checkCanAccess() throws Exception {
+    @DisplayName("Отправка файла в заказ")
+    void sendAttachment_Success() throws Exception {
+        MessageDto attachmentDto = MessageDto.builder()
+                .id(3L)
+                .orderId(1L)
+                .senderId(1L)
+                .attachmentUrl("/uploads/file.png")
+                .build();
+
+        when(messageService.sendAttachment(anyLong(), anyLong(), anyString()))
+                .thenReturn(attachmentDto);
+
+        mockMvc.perform(post("/api/messages/order/{orderId}/attachment", 1L)
+                        .param("senderId", "1")
+                        .param("attachmentUrl", "/uploads/file.png"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.attachmentUrl")
+                        .value("/uploads/file.png"));
+    }
+
+    @Test
+    @DisplayName("Получение сообщений по студии")
+    void getStudioMessages_Success() throws Exception {
+        when(messageService.getMessagesByStudio(eq(1L), any(Pageable.class)))
+                .thenReturn(testMessagePage);
+
+        mockMvc.perform(get("/api/messages/studio/{studioId}", 1L)
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()")
+                        .value(1));
+    }
+
+    @Test
+    @DisplayName("Отправка сообщения в студию")
+    void sendToStudio_Success() throws Exception {
+        when(messageService.sendToStudio(anyLong(), anyLong(), anyString(), any()))
+                .thenReturn(testMessageDto);
+
+        mockMvc.perform(post("/api/messages/studio/{studioId}/send", 1L)
+                        .param("senderId", "1")
+                        .param("content", "Hello studio"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content")
+                        .value("Test message"));
+    }
+
+    @Test
+    @DisplayName("Проверка доступа к сообщениям заказа")
+    void canAccess_Success() throws Exception {
         when(messageService.canUserAccessOrderMessages(1L, 1L)).thenReturn(true);
 
         mockMvc.perform(get("/api/messages/order/{orderId}/access", 1L)
@@ -160,11 +171,12 @@ class MessageControllerWebMvcTest {
     }
 
     @Test
-    void checkGetPreviewMessagesCount() throws Exception {
-        when(messageService.getPreviewMessagesCount(2L)).thenReturn(1L);
+    @DisplayName("Получение количества предпросмотров")
+    void getPreviewMessagesCount_Success() throws Exception {
+        when(messageService.getPreviewMessagesCount(1L)).thenReturn(5L);
 
-        mockMvc.perform(get("/api/messages/order/{orderId}/previews/count", 2L))
+        mockMvc.perform(get("/api/messages/order/{orderId}/previews/count", 1L))
                 .andExpect(status().isOk())
-                .andExpect(content().string("1"));
+                .andExpect(content().string("5"));
     }
 }

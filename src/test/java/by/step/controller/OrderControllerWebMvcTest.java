@@ -1,10 +1,11 @@
 package by.step.controller;
 
 import by.step.dto.OrderDto;
-import by.step.entity.enums.OrderStatus;
+import by.step.enums.OrderStatus;
 import by.step.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,7 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(OrderController.class)
-@ActiveProfiles("test")
+@DisplayName("Web тесты контроллера заказов")
 class OrderControllerWebMvcTest {
 
     @Autowired
@@ -39,7 +39,6 @@ class OrderControllerWebMvcTest {
     private ObjectMapper objectMapper;
 
     private OrderDto testOrderDto;
-    private OrderDto completedOrderDto;
     private Page<OrderDto> testOrderPage;
 
     @BeforeEach
@@ -51,37 +50,24 @@ class OrderControllerWebMvcTest {
                 .artistId(2L)
                 .artistName("petr")
                 .status(OrderStatus.IN_PROGRESS)
-                .description("Скин гнома пивовара")
+                .description("РЎРєРёРЅ РіРЅРѕРјР° РїРёРІРѕРІР°СЂР°")
                 .price(BigDecimal.valueOf(1500))
                 .createdAt(LocalDateTime.of(2024, 1, 10, 10, 0))
-                .build();
-
-        completedOrderDto = OrderDto.builder()
-                .id(1L)
-                .customerId(1L)
-                .customerName("ivan")
-                .artistId(2L)
-                .artistName("petr")
-                .status(OrderStatus.COMPLETED)
-                .description("Скин гнома пивовара")
-                .price(BigDecimal.valueOf(1500))
-                .finalFileUrl("/uploads/orders/1/final.png")
-                .createdAt(LocalDateTime.of(2024, 1, 10, 10, 0))
-                .completedAt(LocalDateTime.of(2024, 1, 15, 14, 0))
                 .build();
 
         testOrderPage = new PageImpl<>(List.of(testOrderDto), PageRequest.of(0, 10), 1);
     }
 
     @Test
-    void checkCreateOrder() throws Exception {
+    @DisplayName("Создание заказа - успех")
+    void createOrder_Success() throws Exception {
         when(orderService.createOrder(anyLong(), anyLong(), anyString(), any(BigDecimal.class)))
                 .thenReturn(testOrderDto);
 
         mockMvc.perform(post("/api/orders")
                         .param("customerId", "1")
                         .param("artistId", "2")
-                        .param("description", "Скин гнома пивовара")
+                        .param("description", "РЎРєРёРЅ РіРЅРѕРјР° РїРёРІРѕРІР°СЂР°")
                         .param("price", "1500"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
@@ -91,17 +77,19 @@ class OrderControllerWebMvcTest {
     }
 
     @Test
-    void findById() throws Exception {
+    @DisplayName("Получение заказа по ID")
+    void findById_Success() throws Exception {
         when(orderService.findById(1L)).thenReturn(testOrderDto);
 
         mockMvc.perform(get("/api/orders/{orderId}", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.description").value("Скин гнома пивовара"))
+                .andExpect(jsonPath("$.description").value("РЎРєРёРЅ РіРЅРѕРјР° РїРёРІРѕРІР°СЂР°"))
                 .andExpect(jsonPath("$.price").value(1500));
     }
 
     @Test
-    void findByCustomer() throws Exception {
+    @DisplayName("Получение заказов заказчика")
+    void findByCustomer_Success() throws Exception {
         when(orderService.findByCustomer(eq(1L), any(Pageable.class)))
                 .thenReturn(testOrderPage);
 
@@ -114,7 +102,8 @@ class OrderControllerWebMvcTest {
     }
 
     @Test
-    void findByArtist() throws Exception {
+    @DisplayName("Получение заказов художника")
+    void findByArtist_Success() throws Exception {
         when(orderService.findByArtist(eq(2L), any(Pageable.class)))
                 .thenReturn(testOrderPage);
 
@@ -127,32 +116,24 @@ class OrderControllerWebMvcTest {
     }
 
     @Test
-    void findByStatus() throws Exception {
-        Page<OrderDto> statusPage = new PageImpl<>(List.of(completedOrderDto), PageRequest.of(0, 10), 1);
-        when(orderService.findByStatus(eq(OrderStatus.COMPLETED), any(Pageable.class)))
+    @DisplayName("Получение заказов по статусу")
+    void findByStatus_Success() throws Exception {
+        Page<OrderDto> statusPage = new PageImpl<>(List.of(testOrderDto), PageRequest.of(0, 10), 1);
+        when(orderService.findByStatus(eq(OrderStatus.IN_PROGRESS), any(Pageable.class)))
                 .thenReturn(statusPage);
 
-        mockMvc.perform(get("/api/orders/status/{status}", "COMPLETED")
+        mockMvc.perform(get("/api/orders/status/{status}", "IN_PROGRESS")
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].status").value("COMPLETED"));
+                .andExpect(jsonPath("$.content[0].status").value("IN_PROGRESS"));
     }
 
-    @Test
-    void findActiveOrdersByArtist() throws Exception {
-        List<OrderDto> activeOrders = List.of(testOrderDto);
-        when(orderService.findActiveOrdersByArtist(2L)).thenReturn(activeOrders);
-
-        mockMvc.perform(get("/api/orders/artist/{artistId}/active", 2L))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].status").value("IN_PROGRESS"));
-    }
 
     @Test
-    void checkUpdateStatus() throws Exception {
+    @DisplayName("Обновление статуса заказа")
+    void updateStatus_Success() throws Exception {
         doNothing().when(orderService).updateStatus(1L, OrderStatus.COMPLETED);
 
         mockMvc.perform(put("/api/orders/{orderId}/status", 1L)
@@ -162,19 +143,10 @@ class OrderControllerWebMvcTest {
         verify(orderService, times(1)).updateStatus(1L, OrderStatus.COMPLETED);
     }
 
-    @Test
-    void checkUpdateFinalFile() throws Exception {
-        doNothing().when(orderService).updateFinalFile(1L, "/uploads/orders/1/final.png");
-
-        mockMvc.perform(put("/api/orders/{orderId}/final-file", 1L)
-                        .param("fileUrl", "/uploads/orders/1/final.png"))
-                .andExpect(status().isOk());
-
-        verify(orderService, times(1)).updateFinalFile(1L, "/uploads/orders/1/final.png");
-    }
 
     @Test
-    void checkStartOrder() throws Exception {
+    @DisplayName("Начало выполнения заказа")
+    void startOrder_Success() throws Exception {
         doNothing().when(orderService).startOrder(1L);
 
         mockMvc.perform(post("/api/orders/{orderId}/start", 1L))
@@ -184,7 +156,8 @@ class OrderControllerWebMvcTest {
     }
 
     @Test
-    void checkSubmitForReview() throws Exception {
+    @DisplayName("Отправка на проверку")
+    void submitForReview_Success() throws Exception {
         doNothing().when(orderService).submitForReview(1L, "/uploads/orders/1/final.png");
 
         mockMvc.perform(post("/api/orders/{orderId}/submit-review", 1L)
@@ -195,7 +168,8 @@ class OrderControllerWebMvcTest {
     }
 
     @Test
-    void checkCompleteOrder() throws Exception {
+    @DisplayName("Завершение заказа")
+    void completeOrder_Success() throws Exception {
         doNothing().when(orderService).completeOrder(1L);
 
         mockMvc.perform(post("/api/orders/{orderId}/complete", 1L))
@@ -205,7 +179,8 @@ class OrderControllerWebMvcTest {
     }
 
     @Test
-    void checkCancelOrder() throws Exception {
+    @DisplayName("Отмена заказа")
+    void cancelOrder_Success() throws Exception {
         doNothing().when(orderService).cancelOrder(1L);
 
         mockMvc.perform(post("/api/orders/{orderId}/cancel", 1L))
@@ -215,7 +190,8 @@ class OrderControllerWebMvcTest {
     }
 
     @Test
-    void checkGetTotalEarnings() throws Exception {
+    @DisplayName("Получение общего заработка художника")
+    void getTotalEarnings_Success() throws Exception {
         when(orderService.getTotalEarnings(2L)).thenReturn(BigDecimal.valueOf(1500));
 
         mockMvc.perform(get("/api/orders/artist/{artistId}/earnings", 2L))
@@ -223,12 +199,4 @@ class OrderControllerWebMvcTest {
                 .andExpect(content().string("1500"));
     }
 
-    @Test
-    void checkGetCompletedOrdersCount() throws Exception {
-        when(orderService.getCompletedOrdersCount(2L)).thenReturn(1L);
-
-        mockMvc.perform(get("/api/orders/artist/{artistId}/completed-count", 2L))
-                .andExpect(status().isOk())
-                .andExpect(content().string("1"));
-    }
 }

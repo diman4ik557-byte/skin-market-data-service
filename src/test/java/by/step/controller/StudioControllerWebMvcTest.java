@@ -5,16 +5,18 @@ import by.step.dto.StudioDto;
 import by.step.service.StudioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(StudioController.class)
-@ActiveProfiles("test")
+@DisplayName("Web тесты контроллера студий")
 class StudioControllerWebMvcTest {
 
     @Autowired
@@ -38,71 +40,60 @@ class StudioControllerWebMvcTest {
 
     private StudioDto testStudioDto;
     private ArtistProfileDto testArtistDto;
-    private List<StudioDto> testStudioList;
 
     @BeforeEach
     void setUp() {
         testStudioDto = StudioDto.builder()
                 .id(1L)
-                .profileId(3L)
-                .name("Art Masters")
-                .description("Студия профессиональных художников по скинам")
-                .foundedAt(LocalDate.of(2023, 1, 15))
-                .managerId(3L)
-                .managerName("maria")
-                .membersCount(2)
+                .profileId(1L)
+                .name("Test Studio")
+                .description("Test Description")
+                .foundedAt(LocalDate.now())
+                .managerId(1L)
+                .managerName("testuser")
+                .membersCount(0)
                 .build();
 
         testArtistDto = ArtistProfileDto.builder()
                 .id(1L)
-                .profileId(2L)
-                .username("petr")
-                .styles("классический, реализм")
-                .minPrice(BigDecimal.valueOf(1000))
+                .profileId(1L)
+                .username("testuser")
+                .styles("classic")
+                .minPrice(BigDecimal.valueOf(500))
                 .averageTime(3)
                 .isAvailable(true)
                 .build();
-
-        StudioDto studio2 = StudioDto.builder()
-                .id(2L)
-                .profileId(6L)
-                .name("Pixel Masters")
-                .description("Студия пиксель-арта")
-                .foundedAt(LocalDate.of(2024, 1, 1))
-                .managerId(6L)
-                .managerName("pixel_artist")
-                .membersCount(1)
-                .build();
-
-        testStudioList = Arrays.asList(testStudioDto, studio2);
     }
 
     @Test
-    void checkCreateStudio() throws Exception {
-        when(studioService.createStudio(eq(1L), anyString(), anyString()))
+    @DisplayName("Создание студии - успех")
+    void createStudio_Success() throws Exception {
+        when(studioService.createStudio(anyLong(), anyString(), anyString()))
                 .thenReturn(testStudioDto);
 
-        mockMvc.perform(post("/api/studios/user/{userId}", 1L)
-                        .param("name", "Art Masters")
-                        .param("description", "Студия профессиональных художников по скинам"))
+        mockMvc.perform(post("/api/studios")
+                        .param("userId", "1")
+                        .param("name", "Test Studio")
+                        .param("description", "Test Description"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("Art Masters"))
-                .andExpect(jsonPath("$.managerName").value("maria"));
+                .andExpect(jsonPath("$.name").value("Test Studio"));
     }
 
     @Test
-    void findById() throws Exception {
+    @DisplayName("Получение студии по ID - успех")
+    void getStudioById_Success() throws Exception {
         when(studioService.findById(1L)).thenReturn(Optional.of(testStudioDto));
 
         mockMvc.perform(get("/api/studios/{studioId}", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Art Masters"))
-                .andExpect(jsonPath("$.membersCount").value(2));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Test Studio"));
     }
 
     @Test
-    void findByIdNotFound() throws Exception {
+    @DisplayName("Получение студии по ID - не найдена")
+    void getStudioById_NotFound() throws Exception {
         when(studioService.findById(999L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/studios/{studioId}", 999L))
@@ -110,101 +101,108 @@ class StudioControllerWebMvcTest {
     }
 
     @Test
-    void findByUserId() throws Exception {
-        when(studioService.findByUserId(3L)).thenReturn(Optional.of(testStudioDto));
-
-        mockMvc.perform(get("/api/studios/user/{userId}", 3L))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Art Masters"));
-    }
-
-    @Test
-    void findAll() throws Exception {
-        when(studioService.findAllStudios()).thenReturn(testStudioList);
+    @DisplayName("Получение всех студий")
+    void getAllStudios_Success() throws Exception {
+        List<StudioDto> studios = Collections.singletonList(testStudioDto);
+        when(studioService.findAllStudios()).thenReturn(studios);
 
         mockMvc.perform(get("/api/studios"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].name").value("Art Masters"))
-                .andExpect(jsonPath("$[1].name").value("Pixel Masters"));
-    }
-
-    @Test
-    void findByName() throws Exception {
-        List<StudioDto> studios = List.of(testStudioDto);
-        when(studioService.findStudiosByName("Art")).thenReturn(studios);
-
-        mockMvc.perform(get("/api/studios/search")
-                        .param("name", "Art"))
-                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].name").value("Art Masters"));
+                .andExpect(jsonPath("$[0].name").value("Test Studio"));
     }
 
     @Test
-    void checkUpdateDescription() throws Exception {
-        StudioDto updatedStudio = StudioDto.builder()
-                .id(1L)
-                .name("Art Masters")
-                .description("Новое описание студии")
-                .build();
-
-        when(studioService.updateDescription(eq(1L), anyString())).thenReturn(updatedStudio);
-
-        mockMvc.perform(put("/api/studios/{studioId}/description", 1L)
-                        .param("description", "Новое описание студии"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.description").value("Новое описание студии"));
-    }
-
-    @Test
-    void checkAddMember() throws Exception {
-        doNothing().when(studioService).addMember(1L, 5L, "ARTIST");
-
-        mockMvc.perform(post("/api/studios/{studioId}/members/{artistId}", 1L, 5L)
-                        .param("role", "ARTIST"))
-                .andExpect(status().isOk());
-
-        verify(studioService, times(1)).addMember(1L, 5L, "ARTIST");
-    }
-
-    @Test
-    void checkRemoveMember() throws Exception {
-        doNothing().when(studioService).removeMember(1L, 5L);
-
-        mockMvc.perform(delete("/api/studios/{studioId}/members/{artistId}", 1L, 5L))
-                .andExpect(status().isOk());
-
-        verify(studioService, times(1)).removeMember(1L, 5L);
-    }
-
-    @Test
-    void checkGetMembers() throws Exception {
-        List<ArtistProfileDto> members = List.of(testArtistDto);
+    @DisplayName("Получение участников студии")
+    void getStudioMembers_Success() throws Exception {
+        List<ArtistProfileDto> members = Collections.singletonList(testArtistDto);
         when(studioService.getStudioMembers(1L)).thenReturn(members);
 
         mockMvc.perform(get("/api/studios/{studioId}/members", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].username").value("petr"));
+                .andExpect(jsonPath("$[0].username").value("testuser"));
     }
 
     @Test
-    void checkGetMemberCount() throws Exception {
-        when(studioService.getMemberCount(1L)).thenReturn(2L);
+    @DisplayName("Подача заявки на вступление")
+    void requestToJoinStudio_Success() throws Exception {
+        doNothing().when(studioService).requestToJoinStudio(1L, 2L);
 
-        mockMvc.perform(get("/api/studios/{studioId}/members/count", 1L))
-                .andExpect(status().isOk())
-                .andExpect(content().string("2"));
-    }
-
-    @Test
-    void checkDeleteStudio() throws Exception {
-        doNothing().when(studioService).deleteStudio(1L);
-
-        mockMvc.perform(delete("/api/studios/{studioId}", 1L))
+        mockMvc.perform(post("/api/studios/{studioId}/members/{artistId}/request", 1L, 2L))
                 .andExpect(status().isOk());
 
-        verify(studioService, times(1)).deleteStudio(1L);
+        verify(studioService, times(1)).requestToJoinStudio(1L, 2L);
+    }
+
+    @Test
+    @DisplayName("Одобрение заявки")
+    void approveMember_Success() throws Exception {
+        doNothing().when(studioService).approveMember(1L, 2L, 1L);
+
+        mockMvc.perform(post("/api/studios/{studioId}/members/{artistId}/approve", 1L, 2L)
+                        .param("managerId", "1"))
+                .andExpect(status().isOk());
+
+        verify(studioService, times(1)).approveMember(1L, 2L, 1L);
+    }
+
+    @Test
+    @DisplayName("Удаление участника")
+    void removeMember_Success() throws Exception {
+        doNothing().when(studioService).removeMember(1L, 2L, 1L);
+
+        mockMvc.perform(delete("/api/studios/{studioId}/members/{artistId}", 1L, 2L)
+                        .param("managerId", "1"))
+                .andExpect(status().isOk());
+
+        verify(studioService, times(1)).removeMember(1L, 2L, 1L);
+    }
+
+    @Test
+    @DisplayName("Выход из студии")
+    void leaveStudio_Success() throws Exception {
+        doNothing().when(studioService).leaveStudio(1L, 2L);
+
+        mockMvc.perform(post("/api/studios/{studioId}/members/{artistId}/leave", 1L, 2L))
+                .andExpect(status().isOk());
+
+        verify(studioService, times(1)).leaveStudio(1L, 2L);
+    }
+
+    @Test
+    @DisplayName("Обновление описания студии")
+    void updateStudio_Success() throws Exception {
+        when(studioService.updateDescription(eq(1L), anyString(), eq(1L)))
+                .thenReturn(testStudioDto);
+
+        mockMvc.perform(put("/api/studios/{studioId}", 1L)
+                        .param("description", "New Description")
+                        .param("managerId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("Test Description"));
+    }
+
+    @Test
+    @DisplayName("Удаление студии")
+    void deleteStudio_Success() throws Exception {
+        doNothing().when(studioService).deleteStudio(1L, 1L);
+
+        mockMvc.perform(delete("/api/studios/{studioId}", 1L)
+                        .param("managerId", "1"))
+                .andExpect(status().isOk());
+
+        verify(studioService, times(1)).deleteStudio(1L, 1L);
+    }
+
+    @Test
+    @DisplayName("Проверка прав менеджера")
+    void isManager_Success() throws Exception {
+        when(studioService.isManager(1L, 1L)).thenReturn(true);
+
+        mockMvc.perform(get("/api/studios/{studioId}/is-manager", 1L)
+                        .param("userId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
     }
 }
