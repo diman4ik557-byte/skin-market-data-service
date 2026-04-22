@@ -1,6 +1,7 @@
 package by.step.entity;
 
-import by.step.entity.enums.StudioRole;
+import by.step.enums.StudioRole;
+import by.step.enums.StudioMemberStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,7 @@ public class StudioMember {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "studio_id",nullable = false)
+    @JoinColumn(name = "studio_id", nullable = false)
     private Studio studio;
 
     @ManyToOne
@@ -31,6 +32,9 @@ public class StudioMember {
 
     @Enumerated(EnumType.STRING)
     private StudioRole role;
+
+    @Enumerated(EnumType.STRING)
+    private StudioMemberStatus status;
 
     @Column(name = "joined_at")
     private LocalDateTime joinedAt;

@@ -1,6 +1,6 @@
 package by.step.entity;
 
-import by.step.entity.enums.OrderStatus;
+import by.step.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

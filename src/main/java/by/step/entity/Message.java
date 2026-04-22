@@ -21,12 +21,20 @@ public class Message {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "order_id")
     private Order order;
+
+    @ManyToOne
+    @JoinColumn(name = "studio_id")
+    private Studio studio;
 
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
+
+    @ManyToOne
+    @JoinColumn(name = "receiver_id")
+    private User receiver;
 
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -36,6 +44,9 @@ public class Message {
 
     @Column(name = "is_preview")
     private Boolean isPreview;
+
+    @Column(name = "is_redirected")
+    private Boolean isRedirected;
 
     @Column(name = "sent_at")
     private LocalDateTime sentAt;

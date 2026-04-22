@@ -1,6 +1,6 @@
 package by.step.entity;
 
-import by.step.entity.enums.SocialPlatform;
+import by.step.enums.SocialPlatform;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

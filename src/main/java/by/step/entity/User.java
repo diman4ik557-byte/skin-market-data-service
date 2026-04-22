@@ -1,6 +1,6 @@
 package by.step.entity;
 
-import by.step.entity.enums.UserRole;
+import by.step.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
