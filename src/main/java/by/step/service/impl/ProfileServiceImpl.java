@@ -13,6 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+/**
+ * Реализация сервиса для работы с профилями пользователей.
+ * Предоставляет операции создания, обновления и проверки статусов профилей.
+ *
+ * @author Skin Market Team
+ * @version 1.0
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -22,6 +29,15 @@ public class ProfileServiceImpl implements ProfileService {
     private final UserRepository userRepository;
     private final ProfileMapper profileMapper = ProfileMapper.INSTANCE;
 
+
+    /**
+     * Создаёт новый профиль для пользователя.
+     * Профиль создаётся с пустым bio и статусами isArtist=false, isStudio=false.
+     *
+     * @param userId идентификатор пользователя
+     * @return ProfileDto созданного профиля
+     * @throws IllegalArgumentException если пользователь не найден или профиль уже существует
+     */
     @Override
     @Transactional
     public ProfileDto createProfile(Long userId) {
@@ -29,7 +45,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден - " +userId));
 
         if (profileRepository.findByUserId(userId).isPresent()) {
-            throw new IllegalArgumentException("Профиль пользователя уже сущетсвует - " +userId);
+            throw new IllegalArgumentException("Профиль пользователя уже существует - " +userId);
         }
 
         Profile profile = Profile.builder()
@@ -43,12 +59,27 @@ public class ProfileServiceImpl implements ProfileService {
         return profileMapper.toDto(savedProfile);
     }
 
+    /**
+     * Находит профиль по идентификатору пользователя.
+     *
+     * @param userId идентификатор пользователя
+     * @return Optional с ProfileDto если профиль найден, иначе пустой Optional
+     */
     @Override
     public Optional<ProfileDto> findByUserId(Long userId) {
         return profileRepository.findByUserId(userId)
                 .map(profileMapper::toDto);
     }
 
+
+    /**
+     * Обновляет текстовое описание (bio) профиля.
+     *
+     * @param profileId идентификатор профиля
+     * @param bio новое текстовое описание
+     * @return ProfileDto с обновлёнными данными
+     * @throws IllegalArgumentException если профиль не найден
+     */
     @Override
     @Transactional
     public ProfileDto updateBio(Long profileId, String bio) {
@@ -60,6 +91,13 @@ public class ProfileServiceImpl implements ProfileService {
         return profileMapper.toDto(updatedProfile);
     }
 
+    /**
+     * Устанавливает статус художника для профиля.
+     *
+     * @param profileId идентификатор профиля
+     * @param isArtist true - пользователь становится художником, false - снимает статус
+     * @throws IllegalArgumentException если профиль не найден
+     */
     @Override
     @Transactional
     public void setArtistStatus(Long profileId, boolean isArtist) {
@@ -70,6 +108,13 @@ public class ProfileServiceImpl implements ProfileService {
         profileRepository.save(profile);
     }
 
+    /**
+     * Устанавливает статус студии для профиля.
+     *
+     * @param profileId идентификатор профиля
+     * @param isStudio true - пользователь становится студией, false - снимает статус
+     * @throws IllegalArgumentException если профиль не найден
+     */
     @Override
     @Transactional
     public void setStudioStatus(Long profileId, boolean isStudio) {
@@ -80,6 +125,12 @@ public class ProfileServiceImpl implements ProfileService {
         profileRepository.save(profile);
     }
 
+    /**
+     * Проверяет, является ли пользователь художником.
+     *
+     * @param userId идентификатор пользователя
+     * @return true если пользователь художник, false в противном случае
+     */
     @Override
     public boolean isArtist(Long userId) {
         return profileRepository.findByUserId(userId)
@@ -87,6 +138,12 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElse(false);
     }
 
+    /**
+     * Проверяет, является ли пользователь студией.
+     *
+     * @param userId идентификатор пользователя
+     * @return true если пользователь студия, false в противном случае
+     */
     @Override
     public boolean isStudio(Long userId) {
         return profileRepository.findByUserId(userId)

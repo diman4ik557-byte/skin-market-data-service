@@ -4,7 +4,7 @@ import by.step.dto.StudioMemberDto;
 import by.step.entity.ArtistProfile;
 import by.step.entity.Studio;
 import by.step.entity.StudioMember;
-import by.step.entity.enums.StudioRole;
+import by.step.enums.StudioRole;
 import by.step.mapper.StudioMemberMapper;
 import by.step.repository.ArtistProfileRepository;
 import by.step.repository.StudioMemberRepository;
@@ -95,7 +95,7 @@ public class StudioMemberServiceImpl implements StudioMemberService {
         Studio studio = studioRepository.findById(studioId)
                 .orElseThrow(() -> new IllegalArgumentException("Студия не найдена - " + studioId));
 
-        return studioMemberRepository.findByStudioAndRole(studio, role).stream()
+        return studioMemberRepository.findByStudioAndRole(studio, StudioRole.valueOf(role)).stream()
                 .map(studioMemberMapper::toDto)
                 .toList();
     }

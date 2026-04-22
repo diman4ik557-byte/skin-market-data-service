@@ -1,7 +1,7 @@
 package by.step.service;
 
 import by.step.dto.SocialLinkDto;
-import by.step.entity.enums.SocialPlatform;
+import by.step.enums.SocialPlatform;
 
 import java.util.List;
 import java.util.Optional;

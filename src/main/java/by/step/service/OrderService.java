@@ -1,7 +1,7 @@
 package by.step.service;
 
 import by.step.dto.OrderDto;
-import by.step.entity.enums.OrderStatus;
+import by.step.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,6 +15,8 @@ public interface OrderService {
     OrderDto findById(Long orderId);
 
     Page<OrderDto> findByCustomer(Long customerId, Pageable pageable);
+
+    List<OrderDto> findByCustomerAsList(Long customerId);
 
     Page<OrderDto> findByArtist(Long artistId, Pageable pageable);
 

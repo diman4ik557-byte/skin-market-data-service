@@ -1,9 +1,12 @@
 package by.step.service;
 
 import by.step.dto.UserDto;
-import by.step.entity.enums.UserRole;
+import by.step.enums.UserRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +34,12 @@ public interface UserService {
     void subtractFromBalance(Long userId,BigDecimal amount);
 
     boolean hasEnoughBalance(Long userId,BigDecimal amount);
+
+    Optional<UserDto> findById(Long id);
+
+    UserDto updateRole(Long id, String role);
+
+    Page<UserDto> findUsersByRolePage(UserRole role, Pageable pageable);
+
+    Page<UserDto> findAllUsersPage(Pageable pageable);
 }

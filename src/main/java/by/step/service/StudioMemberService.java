@@ -1,7 +1,7 @@
 package by.step.service;
 
 import by.step.dto.StudioMemberDto;
-import by.step.entity.enums.StudioRole;
+import by.step.enums.StudioRole;
 
 import java.util.List;
 import java.util.Optional;

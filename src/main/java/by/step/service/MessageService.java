@@ -1,6 +1,7 @@
 package by.step.service;
 
 import by.step.dto.MessageDto;
+import by.step.entity.Studio;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -23,4 +24,16 @@ public interface MessageService {
     boolean canUserAccessOrderMessages(Long orderId, Long userId);
 
     long getPreviewMessagesCount(Long orderId);
+
+    Page<MessageDto> getMessagesByStudio(Long studioId, Pageable pageable);
+
+    MessageDto sendToStudio(Long studioId, Long senderId, String content, String attachmentUrl);
+
+    MessageDto sendToArtist(Long studioId, Long senderId, Long receiverId, String content, String attachmentUrl);
+
+    MessageDto redirectToArtist(Long messageId, Long receiverId, Long managerId);
+
+    List<MessageDto> getUnassignedStudioMessages(Long studioId);
+
+
 }
