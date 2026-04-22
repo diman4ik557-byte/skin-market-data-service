@@ -7,7 +7,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-09T21:50:14+0300",
+    date = "2026-04-23T01:27:40+0300",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.18 (Ubuntu)"
 )
 public class ProfileMapperImpl implements ProfileMapper {

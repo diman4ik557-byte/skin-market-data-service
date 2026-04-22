@@ -3,12 +3,13 @@ package by.step.mapper;
 import by.step.dto.MessageDto;
 import by.step.entity.Message;
 import by.step.entity.Order;
+import by.step.entity.Studio;
 import by.step.entity.User;
 import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-09T21:50:14+0300",
+    date = "2026-04-23T01:27:39+0300",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.18 (Ubuntu)"
 )
 public class MessageMapperImpl implements MessageMapper {
@@ -22,12 +23,17 @@ public class MessageMapperImpl implements MessageMapper {
         MessageDto.MessageDtoBuilder messageDto = MessageDto.builder();
 
         messageDto.orderId( messageOrderId( message ) );
+        messageDto.studioId( messageStudioId( message ) );
+        messageDto.studioName( messageStudioName( message ) );
         messageDto.senderId( messageSenderId( message ) );
         messageDto.senderName( messageSenderUsername( message ) );
+        messageDto.receiverId( messageReceiverId( message ) );
+        messageDto.receiverName( messageReceiverUsername( message ) );
+        messageDto.isPreview( message.getIsPreview() );
+        messageDto.isRedirected( message.getIsRedirected() );
         messageDto.id( message.getId() );
         messageDto.content( message.getContent() );
         messageDto.attachmentUrl( message.getAttachmentUrl() );
-        messageDto.isPreview( message.getIsPreview() );
         messageDto.sentAt( message.getSentAt() );
 
         return messageDto.build();
@@ -41,12 +47,11 @@ public class MessageMapperImpl implements MessageMapper {
 
         Message.MessageBuilder message = Message.builder();
 
-        message.order( messageDtoToOrder( messageDto ) );
-        message.sender( messageDtoToUser( messageDto ) );
         message.id( messageDto.getId() );
         message.content( messageDto.getContent() );
         message.attachmentUrl( messageDto.getAttachmentUrl() );
         message.isPreview( messageDto.getIsPreview() );
+        message.isRedirected( messageDto.getIsRedirected() );
         message.sentAt( messageDto.getSentAt() );
 
         return message.build();
@@ -65,6 +70,36 @@ public class MessageMapperImpl implements MessageMapper {
             return null;
         }
         return id;
+    }
+
+    private Long messageStudioId(Message message) {
+        if ( message == null ) {
+            return null;
+        }
+        Studio studio = message.getStudio();
+        if ( studio == null ) {
+            return null;
+        }
+        Long id = studio.getId();
+        if ( id == null ) {
+            return null;
+        }
+        return id;
+    }
+
+    private String messageStudioName(Message message) {
+        if ( message == null ) {
+            return null;
+        }
+        Studio studio = message.getStudio();
+        if ( studio == null ) {
+            return null;
+        }
+        String name = studio.getName();
+        if ( name == null ) {
+            return null;
+        }
+        return name;
     }
 
     private Long messageSenderId(Message message) {
@@ -97,27 +132,33 @@ public class MessageMapperImpl implements MessageMapper {
         return username;
     }
 
-    protected Order messageDtoToOrder(MessageDto messageDto) {
-        if ( messageDto == null ) {
+    private Long messageReceiverId(Message message) {
+        if ( message == null ) {
             return null;
         }
-
-        Order.OrderBuilder order = Order.builder();
-
-        order.id( messageDto.getOrderId() );
-
-        return order.build();
+        User receiver = message.getReceiver();
+        if ( receiver == null ) {
+            return null;
+        }
+        Long id = receiver.getId();
+        if ( id == null ) {
+            return null;
+        }
+        return id;
     }
 
-    protected User messageDtoToUser(MessageDto messageDto) {
-        if ( messageDto == null ) {
+    private String messageReceiverUsername(Message message) {
+        if ( message == null ) {
             return null;
         }
-
-        User.UserBuilder user = User.builder();
-
-        user.id( messageDto.getSenderId() );
-
-        return user.build();
+        User receiver = message.getReceiver();
+        if ( receiver == null ) {
+            return null;
+        }
+        String username = receiver.getUsername();
+        if ( username == null ) {
+            return null;
+        }
+        return username;
     }
 }

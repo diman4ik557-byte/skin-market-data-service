@@ -3,12 +3,12 @@ package by.step.mapper;
 import by.step.dto.SocialLinkDto;
 import by.step.entity.Profile;
 import by.step.entity.SocialLink;
-import by.step.entity.enums.SocialPlatform;
+import by.step.enums.SocialPlatform;
 import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-09T21:50:14+0300",
+    date = "2026-04-23T01:27:40+0300",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.18 (Ubuntu)"
 )
 public class SocialLinkMapperImpl implements SocialLinkMapper {

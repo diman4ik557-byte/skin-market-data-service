@@ -1,4 +1,14 @@
--- Создание таблиц для Skin Market Platform
+-- Skin Market Platform
+
+-- Удаляем таблицы, если существуют
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS studio_members CASCADE;
+DROP TABLE IF EXISTS artist_profiles CASCADE;
+DROP TABLE IF EXISTS studios CASCADE;
+DROP TABLE IF EXISTS social_links CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 -- 1. Пользователи
 CREATE TABLE IF NOT EXISTS users (
@@ -57,6 +67,7 @@ CREATE TABLE IF NOT EXISTS studio_members (
                                               studio_id BIGINT NOT NULL REFERENCES studios(id) ON DELETE CASCADE,
     member_id BIGINT NOT NULL REFERENCES artist_profiles(id) ON DELETE CASCADE,
     role VARCHAR(20) DEFAULT 'ARTIST',
+    status VARCHAR(20) DEFAULT 'PENDING',
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(studio_id, member_id)
     );
@@ -77,10 +88,21 @@ CREATE TABLE IF NOT EXISTS orders (
 -- 8. Сообщения
 CREATE TABLE IF NOT EXISTS messages (
                                         id BIGSERIAL PRIMARY KEY,
-                                        order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+                                        order_id BIGINT REFERENCES orders(id) ON DELETE CASCADE,
+    studio_id BIGINT REFERENCES studios(id) ON DELETE CASCADE,
     sender_id BIGINT NOT NULL REFERENCES users(id),
+    receiver_id BIGINT REFERENCES users(id),
     content TEXT,
     attachment_url VARCHAR(500),
     is_preview BOOLEAN DEFAULT FALSE,
+    is_redirected BOOLEAN DEFAULT FALSE,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+-- Создаем индексы
+CREATE INDEX IF NOT EXISTS idx_messages_order_id ON messages(order_id);
+CREATE INDEX IF NOT EXISTS idx_messages_studio_id ON messages(studio_id);
+CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_orders_artist_id ON orders(artist_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);

@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: by.step.service.ArtistProfileServiceMockitoTest
--------------------------------------------------------------------------------
-Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.096 s -- in by.step.service.ArtistProfileServiceMockitoTest

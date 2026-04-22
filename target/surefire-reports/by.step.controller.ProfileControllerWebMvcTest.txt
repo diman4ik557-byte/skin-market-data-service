@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: by.step.controller.ProfileControllerWebMvcTest
--------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 21.29 s -- in by.step.controller.ProfileControllerWebMvcTest
