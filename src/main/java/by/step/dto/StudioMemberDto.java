@@ -1,6 +1,6 @@
 package by.step.dto;
 
-import by.step.entity.enums.StudioRole;
+import by.step.enums.StudioRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

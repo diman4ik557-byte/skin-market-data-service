@@ -1,6 +1,6 @@
 package by.step.dto;
 
-import by.step.entity.enums.SocialPlatform;
+import by.step.enums.SocialPlatform;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
