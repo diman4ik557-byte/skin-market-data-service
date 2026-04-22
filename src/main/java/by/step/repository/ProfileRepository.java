@@ -31,9 +31,6 @@ public interface ProfileRepository extends JpaRepository<Profile,Long> {
     @Query("SELECT p FROM Profile p WHERE p.isArtist = true AND p.user.balance > :minBalance")
     List<Profile> findArtistsWithMinBalance(@Param("minBalance") java.math.BigDecimal minBalance);
 
-    @Query("SELECT p FROM Profile p WHERE p.isArtist = true AND p.bio LIKE %:keyword%")
-    List<Profile> searchArtistsByBio(@Param("keyword") String keyword);
-
     // Modifying Queries
 
     @Modifying

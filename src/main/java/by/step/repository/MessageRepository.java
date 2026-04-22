@@ -2,6 +2,8 @@ package by.step.repository;
 
 import by.step.entity.Message;
 import by.step.entity.Order;
+import by.step.entity.Studio;
+import by.step.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,6 +24,13 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     void deleteByOrder(Order order);
 
+    Page<Message> findByStudio(Studio studio, Pageable pageable);
+
+    List<Message> findByStudioAndReceiverIsNull(Studio studio);
+
+    List<Message> findByStudioAndReceiver(Studio studio, User receiver);
+
+
     // HQL Queries
 
     @Query("SELECT m FROM Message m WHERE m.order.id = :orderId AND m.sender.id = :senderId")
@@ -33,6 +42,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     @Query("SELECT COUNT(m) FROM Message m WHERE m.order.id = :orderId AND m.isPreview = true")
     long countPreviewMessages(@Param("orderId") Long orderId);
+
 
     // Modifying Queries
 

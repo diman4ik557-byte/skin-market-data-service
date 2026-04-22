@@ -2,7 +2,7 @@ package by.step.repository;
 
 import by.step.entity.Profile;
 import by.step.entity.SocialLink;
-import by.step.entity.enums.SocialPlatform;
+import by.step.enums.SocialPlatform;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

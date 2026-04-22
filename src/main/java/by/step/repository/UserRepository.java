@@ -1,7 +1,7 @@
 package by.step.repository;
 
 import by.step.entity.User;
-import by.step.entity.enums.UserRole;
+import by.step.enums.UserRole;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.NonNullApi;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -82,17 +81,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Native SQL Queries
 
-    @Query(value = "SELECT * FROM users WHERE registered_at < NOW() - INTERVAL '1 year'",
-            nativeQuery = true)
-    List<User> findInactiveUsers();
-
-    @Query(value = "SELECT * FROM users ORDER BY registered_at DESC LIMIT :limit",
-            nativeQuery = true)
-    List<User> findRecentUsers(@Param("limit") int limit);
 
     // Pagination
 
     Page<User> findByRole(UserRole role, Pageable pageable);
 
-    Page<User> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
 }

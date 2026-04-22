@@ -2,7 +2,7 @@ package by.step.repository;
 
 import by.step.entity.Order;
 import by.step.entity.User;
-import by.step.entity.enums.OrderStatus;
+import by.step.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

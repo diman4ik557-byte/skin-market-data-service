@@ -27,11 +27,8 @@ public interface StudioRepository extends JpaRepository<Studio,Long> {
     @Query("SELECT s FROM Studio s WHERE s.manager.id = :managerId")
     List<Studio> findByManagerId(@Param("managerId") Long managerId);
 
-    @Query("SELECT COUNT(m) FROM StudioMember m WHERE m.studio.id = :studioId")
+    @Query("SELECT COUNT(m) FROM StudioMember m WHERE m.studio.id = :studioId AND m.status = 'APPROVED'")
     long countMembers(@Param("studioId") Long studioId);
-
-    @Query("SELECT s FROM Studio s WHERE LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Studio> searchByDescription(@Param("keyword") String keyword);
 
     // Modifying Queries
 
